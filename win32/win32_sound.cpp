@@ -194,7 +194,7 @@
 #include "../apu/apu.h"
 #include "wsnes9x.h"
 #include "CDirectSound.h"
-#include "CXAudio2.h"
+//#include "CXAudio2.h"
 #include "win32_sound.h"
 #include "win32_display.h"
 
@@ -202,10 +202,10 @@
 
 // available sound output methods
 CDirectSound S9xDirectSound;
-CXAudio2 S9xXAudio2;
+//CXAudio2 S9xXAudio2;
 
 // Interface used to access the sound output
-IS9xSoundOutput *S9xSoundOutput = &S9xXAudio2;
+IS9xSoundOutput *S9xSoundOutput = &S9xDirectSound;//&S9xXAudio2;
 
 /*  ReInitSound
 reinitializes the sound core with current settings
@@ -259,9 +259,9 @@ bool8 S9xOpenSoundDevice ()
 			S9xSoundOutput = &S9xDirectSound;
 			Settings.DynamicRateControl = false;
 			break;
-		case WIN_XAUDIO2_SOUND_DRIVER:
-			S9xSoundOutput = &S9xXAudio2;
-			break;
+		//case WIN_XAUDIO2_SOUND_DRIVER:
+		//	S9xSoundOutput = &S9xXAudio2;
+		//	break;
 		default:	// we default to DirectSound
 			GUI.SoundDriver = WIN_SNES9X_DIRECT_SOUND_DRIVER;
 			S9xSoundOutput = &S9xDirectSound;
