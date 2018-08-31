@@ -413,7 +413,7 @@ uint8 S9xGetSA1 (uint32 address)
 		}
 
 		case 0x230e: // version code register
-			return (0x01);
+			return (0x23);
 
 		default:
 			break;
