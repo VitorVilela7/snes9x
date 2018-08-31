@@ -947,16 +947,22 @@ uint8 S9xSA1GetByte (uint32 address)
 	switch ((pint) GetAddress)
 	{
 		case CMemory::MAP_PPU:
+			SA1.Cycles += ONE_CYCLE;
 			return (S9xGetSA1(address & 0xffff));
 
 		case CMemory::MAP_LOROM_SRAM:
+		case CMemory::MAP_HIROM_SRAM:
 		case CMemory::MAP_SA1RAM:
+			SA1.Cycles += ONE_CYCLE * 2;
 			return (*(Memory.SRAM + (address & 0x3ffff)));
 
 		case CMemory::MAP_BWRAM:
+			SA1.Cycles += ONE_CYCLE * 2;
 			return (*(SA1.BWRAM + (address & 0x1fff)));
 
 		case CMemory::MAP_BWRAM_BITMAP:
+			SA1.Cycles += ONE_CYCLE * 2;
+
 			address -= 0x600000;
 			if (SA1.VirtualBitmapFormat == 2)
 				return ((Memory.SRAM[(address >> 2) & 0x3ffff] >> ((address & 3) << 1)) &  3);
@@ -964,6 +970,8 @@ uint8 S9xSA1GetByte (uint32 address)
 				return ((Memory.SRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		case CMemory::MAP_BWRAM_BITMAP2:
+			SA1.Cycles += ONE_CYCLE * 2;
+
 			address = (address & 0xffff) - 0x6000;
 			if (SA1.VirtualBitmapFormat == 2)
 				return ((SA1.BWRAM[(address >> 2) & 0x3ffff] >> ((address & 3) << 1)) &  3);
@@ -971,6 +979,7 @@ uint8 S9xSA1GetByte (uint32 address)
 				return ((SA1.BWRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		default:
+			SA1.Cycles += ONE_CYCLE;
 			return (SA1OpenBus);
 	}
 }
@@ -1016,6 +1025,7 @@ void S9xSA1SetByte (uint8 byte, uint32 address)
 			return;
 
 		case CMemory::MAP_LOROM_SRAM:
+		case CMemory::MAP_HIROM_SRAM:
 		case CMemory::MAP_SA1RAM:
 			*(Memory.SRAM + (address & 0x3ffff)) = byte;
 			return;
@@ -1102,7 +1112,7 @@ void S9xSA1SetPCBase (uint32 address)
 	// FIXME
 	SA1.MemSpeed = SLOW_ONE_CYCLE;
 
-	if (address & 0xc00000 == 0x400000)
+	if ((address & 0xc00000) == 0x400000 || (address & 0x40e000) == 0x6000)
 	{
 		SA1.MemSpeed = SLOW_ONE_CYCLE * 2;
 	}
