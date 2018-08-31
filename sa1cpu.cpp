@@ -380,8 +380,8 @@ static void S9xSA1UpdateTimer (void) // FIXME
 		}
 	}
 
-	if (SA1.Cycles >= Timings.H_Max_Master)
-		SA1.Cycles -= Timings.H_Max_Master;
+	//if (SA1.Cycles >= Timings.H_Max_Master)
+	//	SA1.Cycles -= Timings.H_Max_Master;
 
 	SA1.PrevCycles = SA1.Cycles;
 
