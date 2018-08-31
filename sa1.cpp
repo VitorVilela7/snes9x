@@ -288,7 +288,7 @@ static void S9xSA1SetBWRAMMemMap (uint8 val)
 			SA1.WriteMap[c + 7] = SA1.WriteMap[c + 0x807] = (uint8 *) CMemory::MAP_BWRAM;
 		}
 
-		SA1.BWRAM = Memory.SRAM + (val & 7) * 0x2000;
+		SA1.BWRAM = Memory.SRAM + (val & 0x1f) * 0x2000;
 	}
 }
 
@@ -301,7 +301,7 @@ void S9xSA1PostLoadState (void)
 	S9xSA1UnpackStatus();
 	S9xSA1FixCycles();
 	SA1.VirtualBitmapFormat = (Memory.FillRAM[0x223f] & 0x80) ? 2 : 4;
-	Memory.BWRAM = Memory.SRAM + (Memory.FillRAM[0x2224] & 7) * 0x2000;
+	Memory.BWRAM = Memory.SRAM + (Memory.FillRAM[0x2224] & 0x1f) * 0x2000;
 	S9xSA1SetBWRAMMemMap(Memory.FillRAM[0x2225]);
 }
 
@@ -600,7 +600,7 @@ void S9xSetSA1 (uint8 byte, uint32 address)
 			break;
 
 		case 0x2224: // S-CPU BW-RAM mapping
-			Memory.BWRAM = Memory.SRAM + (byte & 7) * 0x2000;
+			Memory.BWRAM = Memory.SRAM + (byte & 0x1f) * 0x2000;
 			break;
 
 		case 0x2225: // SA-1 BW-RAM mapping
@@ -951,24 +951,24 @@ uint8 S9xSA1GetByte (uint32 address)
 
 		case CMemory::MAP_LOROM_SRAM:
 		case CMemory::MAP_SA1RAM:
-			return (*(Memory.SRAM + (address & 0xffff)));
+			return (*(Memory.SRAM + (address & 0x3ffff)));
 
 		case CMemory::MAP_BWRAM:
-			return (*(SA1.BWRAM + ((address & 0x7fff) - 0x6000)));
+			return (*(SA1.BWRAM + (address & 0x1fff)));
 
 		case CMemory::MAP_BWRAM_BITMAP:
 			address -= 0x600000;
 			if (SA1.VirtualBitmapFormat == 2)
-				return ((Memory.SRAM[(address >> 2) & 0xffff] >> ((address & 3) << 1)) &  3);
+				return ((Memory.SRAM[(address >> 2) & 0x3ffff] >> ((address & 3) << 1)) &  3);
 			else
-				return ((Memory.SRAM[(address >> 1) & 0xffff] >> ((address & 1) << 2)) & 15);
+				return ((Memory.SRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		case CMemory::MAP_BWRAM_BITMAP2:
 			address = (address & 0xffff) - 0x6000;
 			if (SA1.VirtualBitmapFormat == 2)
-				return ((SA1.BWRAM[(address >> 2) & 0xffff] >> ((address & 3) << 1)) &  3);
+				return ((SA1.BWRAM[(address >> 2) & 0x3ffff] >> ((address & 3) << 1)) &  3);
 			else
-				return ((SA1.BWRAM[(address >> 1) & 0xffff] >> ((address & 1) << 2)) & 15);
+				return ((SA1.BWRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		default:
 			return (SA1OpenBus);
@@ -1017,24 +1017,24 @@ void S9xSA1SetByte (uint8 byte, uint32 address)
 
 		case CMemory::MAP_LOROM_SRAM:
 		case CMemory::MAP_SA1RAM:
-			*(Memory.SRAM + (address & 0xffff)) = byte;
+			*(Memory.SRAM + (address & 0x3ffff)) = byte;
 			return;
 
 		case CMemory::MAP_BWRAM:
-			*(SA1.BWRAM + ((address & 0x7fff) - 0x6000)) = byte;
+			*(SA1.BWRAM + (address & 0x1fff)) = byte;
 			return;
 
 		case CMemory::MAP_BWRAM_BITMAP:
 			address -= 0x600000;
 			if (SA1.VirtualBitmapFormat == 2)
 			{
-				uint8	*ptr = &Memory.SRAM[(address >> 2) & 0xffff];
+				uint8	*ptr = &Memory.SRAM[(address >> 2) & 0x3ffff];
 				*ptr &= ~(3  << ((address & 3) << 1));
 				*ptr |= (byte &  3) << ((address & 3) << 1);
 			}
 			else
 			{
-				uint8	*ptr = &Memory.SRAM[(address >> 1) & 0xffff];
+				uint8	*ptr = &Memory.SRAM[(address >> 1) & 0x3ffff];
 				*ptr &= ~(15 << ((address & 1) << 2));
 				*ptr |= (byte & 15) << ((address & 1) << 2);
 			}
@@ -1045,13 +1045,13 @@ void S9xSA1SetByte (uint8 byte, uint32 address)
 			address = (address & 0xffff) - 0x6000;
 			if (SA1.VirtualBitmapFormat == 2)
 			{
-				uint8	*ptr = &SA1.BWRAM[(address >> 2) & 0xffff];
+				uint8	*ptr = &SA1.BWRAM[(address >> 2) & 0x3ffff];
 				*ptr &= ~(3  << ((address & 3) << 1));
 				*ptr |= (byte &  3) << ((address & 3) << 1);
 			}
 			else
 			{
-				uint8	*ptr = &SA1.BWRAM[(address >> 1) & 0xffff];
+				uint8	*ptr = &SA1.BWRAM[(address >> 1) & 0x3ffff];
 				*ptr &= ~(15 << ((address & 1) << 2));
 				*ptr |= (byte & 15) << ((address & 1) << 2);
 			}
