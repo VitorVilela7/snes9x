@@ -1100,7 +1100,13 @@ void S9xSA1SetPCBase (uint32 address)
 	SA1.ShiftedPB = address & 0xff0000;
 
 	// FIXME
-	SA1.MemSpeed = memory_speed(address);
+	SA1.MemSpeed = SLOW_ONE_CYCLE;
+
+	if (address & 0xc00000 == 0x400000)
+	{
+		SA1.MemSpeed = SLOW_ONE_CYCLE * 2;
+	}
+
 	SA1.MemSpeedx2 = SA1.MemSpeed << 1;
 
 	uint8	*GetAddress = SA1.Map[(address & 0xffffff) >> MEMMAP_SHIFT];
