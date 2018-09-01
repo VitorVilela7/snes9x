@@ -247,6 +247,11 @@ inline uint8 S9xGetByte (uint32 Address)
 	int32	speed = memory_speed(Address);
 	uint8	byte;
 
+	if (Settings.SA1 && ((Address & 0xc00000) == 0xc00000 || (Address & 0x408000) == 0x8000))
+	{
+		SA1.SCpuRomCycles += 8;
+	}
+
 	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
 	{
 		byte = *(GetAddress + (Address & 0xffff));
@@ -375,6 +380,11 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 	int		block = (Address & 0xffffff) >> MEMMAP_SHIFT;
 	uint8	*GetAddress = Memory.Map[block];
 	int32	speed = memory_speed(Address);
+
+	if (Settings.SA1 && ((Address & 0xc00000) == 0xc00000 || (Address & 0x408000) == 0x8000))
+	{
+		SA1.SCpuRomCycles += 16;
+	}
 
 	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
 	{
@@ -889,6 +899,11 @@ inline void S9xSetPCBase (uint32 Address)
 
 	CPU.MemSpeed = memory_speed(Address);
 	CPU.MemSpeedx2 = CPU.MemSpeed << 1;
+
+	if (Settings.SA1)
+	{
+		SA1.SCpuExecutingRom = ((Address & 0xc00000) == 0xc00000 || (Address & 0x408000) == 0x8000);
+	}
 
 	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
 	{
