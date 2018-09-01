@@ -242,6 +242,10 @@ struct SSA1
 	bool8	overflow;
 	uint8	VirtualBitmapFormat;
 	uint8	variable_bit_pos;
+
+	int32	SCpuRomCycles;
+	bool8	SCpuExecutingRom;
+	bool8	CCpuExecutingRom;
 };
 
 #define SA1CheckCarry()		(SA1._Carry)
