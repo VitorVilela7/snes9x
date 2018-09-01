@@ -330,6 +330,19 @@ void S9xSA1MainLoop (void)
 		{
 			SA1OpenBus = Op = SA1.PCBase[Registers.PCw];
 			Opcodes = SA1.S9xOpcodes;
+
+			if (SA1.CCpuExecutingRom && SA1.SCpuRomCycles > 0)
+			{
+				SA1.SCpuRomCycles -= 4;
+				SA1.MemSpeed = 12;
+				SA1.MemSpeedx2 = 24;
+			}
+			else
+			{
+				SA1.MemSpeed = 6;
+				SA1.MemSpeedx2 = 12;
+			}
+
 			SA1.Cycles += SA1.MemSpeed / 3;
 		}
 		else

@@ -262,6 +262,10 @@ void S9xSA1Init (void)
 	SA1.BWRAM = Memory.SRAM;
 
 	CPU.IRQExternal = FALSE;
+
+	SA1.SCpuRomCycles = 0;
+	SA1.SCpuExecutingRom = FALSE;
+	SA1.CCpuExecutingRom = FALSE;
 }
 
 static void S9xSA1SetBWRAMMemMap (uint8 val)
@@ -941,9 +945,14 @@ uint8 S9xSA1GetByte (uint32 address)
 {
 	uint8	*GetAddress = SA1.Map[(address & 0xffffff) >> MEMMAP_SHIFT];
 
-	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
 	if (GetAddress >= (uint8 *)CMemory::MAP_LAST)
 	{
+		if (((address & 0xc00000) == 0xc00000 || (address & 0x408000) == 0x8000) && SA1.SCpuRomCycles > 0)
+		{
+			SA1.SCpuRomCycles -= 4;
+			SA1.Cycles += SA1.MemSpeed / 3;
+		}
+
 		SA1.Cycles += SA1.MemSpeed / 3;
 		return (*(GetAddress + (address & 0xffff)));
 	}
@@ -1122,6 +1131,7 @@ void S9xSA1SetPCBase (uint32 address)
 	}
 
 	SA1.MemSpeedx2 = SA1.MemSpeed << 1;
+	SA1.CCpuExecutingRom = ((address & 0xc00000) == 0xc00000 || (address & 0x408000) == 0x8000);
 
 	uint8	*GetAddress = SA1.Map[(address & 0xffffff) >> MEMMAP_SHIFT];
 
