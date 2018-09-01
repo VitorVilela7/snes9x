@@ -315,6 +315,12 @@ void S9xMainLoop (void)
 		{
 			Op = CPU.PCBase[Registers.PCw];
 			CPU.Cycles += CPU.MemSpeed;
+			
+			if (Settings.SA1 && SA1.SCpuExecutingRom)
+			{
+				SA1.SCpuRomCycles += 8;
+			}
+
 			Opcodes = ICPU.S9xOpcodes;
 		}
 		else
