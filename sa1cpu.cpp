@@ -313,7 +313,7 @@ void S9xSA1MainLoop (void)
 	}
 
 	#undef CPU
-	int cycles = CPU.Cycles * 4;
+	int cycles = CPU.Cycles;
 	#define CPU SA1
 
 	for (; SA1.Cycles < cycles && !(Memory.FillRAM[0x2200] & 0x60);)
@@ -330,7 +330,7 @@ void S9xSA1MainLoop (void)
 		{
 			SA1OpenBus = Op = SA1.PCBase[Registers.PCw];
 			Opcodes = SA1.S9xOpcodes;
-			SA1.Cycles += SA1.MemSpeed;
+			SA1.Cycles += SA1.MemSpeed / 3;
 		}
 		else
 		{

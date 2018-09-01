@@ -203,7 +203,7 @@
 #endif
 
 #ifdef SA1_OPCODES
-#define AddCycles(n)	{ SA1.Cycles += (n); }
+#define AddCycles(n)	{ SA1.Cycles += (n/3); }
 #else
 #define AddCycles(n)	{ CPU.Cycles += (n); while (CPU.Cycles >= CPU.NextEvent) S9xDoHEventProcessing(); }
 #endif
@@ -2797,13 +2797,13 @@ void S9xOpcode_IRQ (void)
 
 	#ifdef SA1_OPCODES
 		OpenBus = Memory.FillRAM[0x2208];
-		AddCycles(2 * SLOW_ONE_CYCLE);
+		AddCycles(2 * ONE_CYCLE);
 		S9xSA1SetPCBase(Memory.FillRAM[0x2207] | (Memory.FillRAM[0x2208] << 8));
 	#else
 		if (Settings.SA1 && (Memory.FillRAM[0x2209] & 0x40))
 		{
 			OpenBus = Memory.FillRAM[0x220f];
-			AddCycles(2 * SLOW_ONE_CYCLE);
+			AddCycles(2 * ONE_CYCLE);
 			S9xSetPCBase(Memory.FillRAM[0x220e] | (Memory.FillRAM[0x220f] << 8));
 		}
 		else
@@ -2825,13 +2825,13 @@ void S9xOpcode_IRQ (void)
 
 	#ifdef SA1_OPCODES
 		OpenBus = Memory.FillRAM[0x2208];
-		AddCycles(2 * SLOW_ONE_CYCLE);
+		AddCycles(2 * ONE_CYCLE);
 		S9xSA1SetPCBase(Memory.FillRAM[0x2207] | (Memory.FillRAM[0x2208] << 8));
 	#else
 		if (Settings.SA1 && (Memory.FillRAM[0x2209] & 0x40))
 		{
 			OpenBus = Memory.FillRAM[0x220f];
-			AddCycles(2 * SLOW_ONE_CYCLE);
+			AddCycles(2 * ONE_CYCLE);
 			S9xSetPCBase(Memory.FillRAM[0x220e] | (Memory.FillRAM[0x220f] << 8));
 		}
 		else
@@ -2872,13 +2872,13 @@ void S9xOpcode_NMI (void)
 
 	#ifdef SA1_OPCODES
 		OpenBus = Memory.FillRAM[0x2206];
-		AddCycles(2 * SLOW_ONE_CYCLE);
+		AddCycles(2 * ONE_CYCLE);
 		S9xSA1SetPCBase(Memory.FillRAM[0x2205] | (Memory.FillRAM[0x2206] << 8));
 	#else
 		if (Settings.SA1 && (Memory.FillRAM[0x2209] & 0x10))
 		{
 			OpenBus = Memory.FillRAM[0x220d];
-			AddCycles(2 * SLOW_ONE_CYCLE);
+			AddCycles(2 * ONE_CYCLE);
 			S9xSetPCBase(Memory.FillRAM[0x220c] | (Memory.FillRAM[0x220d] << 8));
 		}
 		else
@@ -2900,13 +2900,13 @@ void S9xOpcode_NMI (void)
 
 	#ifdef SA1_OPCODES
 		OpenBus = Memory.FillRAM[0x2206];
-		AddCycles(2 * SLOW_ONE_CYCLE);
+		AddCycles(2 * ONE_CYCLE);
 		S9xSA1SetPCBase(Memory.FillRAM[0x2205] | (Memory.FillRAM[0x2206] << 8));
 	#else
 		if (Settings.SA1 && (Memory.FillRAM[0x2209] & 0x10))
 		{
 			OpenBus = Memory.FillRAM[0x220d];
-			AddCycles(2 * SLOW_ONE_CYCLE);
+			AddCycles(2 * ONE_CYCLE);
 			S9xSetPCBase(Memory.FillRAM[0x220c] | (Memory.FillRAM[0x220d] << 8));
 		}
 		else

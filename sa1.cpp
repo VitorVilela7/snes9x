@@ -248,8 +248,8 @@ void S9xSA1Init (void)
 	SA1SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
 	SA1ClearFlags(Decimal);
 
-	SA1.MemSpeed = SLOW_ONE_CYCLE;
-	SA1.MemSpeedx2 = SLOW_ONE_CYCLE * 2;
+	SA1.MemSpeed = ONE_CYCLE;
+	SA1.MemSpeedx2 = ONE_CYCLE * 2;
 
 	SA1.S9xOpcodes = S9xSA1OpcodesM1X1;
 	SA1.S9xOpLengths = S9xOpLengthsM1X1;
@@ -942,26 +942,30 @@ uint8 S9xSA1GetByte (uint32 address)
 	uint8	*GetAddress = SA1.Map[(address & 0xffffff) >> MEMMAP_SHIFT];
 
 	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
+	if (GetAddress >= (uint8 *)CMemory::MAP_LAST)
+	{
+		SA1.Cycles += SA1.MemSpeed / 3;
 		return (*(GetAddress + (address & 0xffff)));
+	}
 
 	switch ((pint) GetAddress)
 	{
 		case CMemory::MAP_PPU:
-			SA1.Cycles += ONE_CYCLE;
+			SA1.Cycles += ONE_CYCLE / 3;
 			return (S9xGetSA1(address & 0xffff));
 
 		case CMemory::MAP_LOROM_SRAM:
 		case CMemory::MAP_HIROM_SRAM:
 		case CMemory::MAP_SA1RAM:
-			SA1.Cycles += ONE_CYCLE * 2;
+			SA1.Cycles += ONE_CYCLE * 2 / 3;
 			return (*(Memory.SRAM + (address & 0x3ffff)));
 
 		case CMemory::MAP_BWRAM:
-			SA1.Cycles += ONE_CYCLE * 2;
+			SA1.Cycles += ONE_CYCLE * 2 / 3;
 			return (*(SA1.BWRAM + (address & 0x1fff)));
 
 		case CMemory::MAP_BWRAM_BITMAP:
-			SA1.Cycles += ONE_CYCLE * 2;
+			SA1.Cycles += ONE_CYCLE * 2 / 3;
 
 			address -= 0x600000;
 			if (SA1.VirtualBitmapFormat == 2)
@@ -970,7 +974,7 @@ uint8 S9xSA1GetByte (uint32 address)
 				return ((Memory.SRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		case CMemory::MAP_BWRAM_BITMAP2:
-			SA1.Cycles += ONE_CYCLE * 2;
+			SA1.Cycles += ONE_CYCLE * 2 / 3;
 
 			address = (address & 0xffff) - 0x6000;
 			if (SA1.VirtualBitmapFormat == 2)
@@ -979,7 +983,7 @@ uint8 S9xSA1GetByte (uint32 address)
 				return ((SA1.BWRAM[(address >> 1) & 0x3ffff] >> ((address & 1) << 2)) & 15);
 
 		default:
-			SA1.Cycles += ONE_CYCLE;
+			SA1.Cycles += ONE_CYCLE / 3;
 			return (SA1OpenBus);
 	}
 }
@@ -1110,11 +1114,11 @@ void S9xSA1SetPCBase (uint32 address)
 	SA1.ShiftedPB = address & 0xff0000;
 
 	// FIXME
-	SA1.MemSpeed = SLOW_ONE_CYCLE;
+	SA1.MemSpeed = ONE_CYCLE;
 
 	if ((address & 0xc00000) == 0x400000 || (address & 0x40e000) == 0x6000)
 	{
-		SA1.MemSpeed = SLOW_ONE_CYCLE * 2;
+		SA1.MemSpeed = TWO_CYCLES;
 	}
 
 	SA1.MemSpeedx2 = SA1.MemSpeed << 1;
