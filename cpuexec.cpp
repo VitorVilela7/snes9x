@@ -446,7 +446,7 @@ void S9xDoHEventProcessing (void)
 
 			if (Settings.SA1)
 			{
-				SA1.Cycles -= Timings.H_Max * 4;
+				SA1.Cycles -= Timings.H_Max;
 			}
 
 			CPU.V_Counter++;
