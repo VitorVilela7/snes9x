@@ -204,8 +204,10 @@
 
 #ifdef SA1_OPCODES
 #define AddCycles(n)	{ SA1.Cycles += (n/3); }
+#define MemCheck(n)		{ if (SA1.CCpuExecutingRom&&SA1.SCpuRomCycles>0) { SA1.SCpuRomCycles -= 8*n; AddCycles(2*CPU.MemSpeed*n); } }
 #else
 #define AddCycles(n)	{ CPU.Cycles += (n); while (CPU.Cycles >= CPU.NextEvent) S9xDoHEventProcessing(); }
+#define MemCheck(n)		{ if (Settings.SA1 && SA1.SCpuExecutingRom) SA1.SCpuRomCycles += n << 3; }
 #endif
 
 #include "cpuaddr.h"
@@ -2738,6 +2740,7 @@ static void Op00 (void)
 #endif
 
 	AddCycles(CPU.MemSpeed);
+	MemCheck(1);
 
 	uint16	addr;
 
@@ -2784,6 +2787,8 @@ void S9xOpcode_IRQ (void)
 
 	// IRQ and NMI do an opcode fetch as their first "IO" cycle.
 	AddCycles(CPU.MemSpeed + ONE_CYCLE);
+	MemCheck(1);
+
 
 	if (!CheckEmulation())
 	{
@@ -2859,6 +2864,7 @@ void S9xOpcode_NMI (void)
 
 	// IRQ and NMI do an opcode fetch as their first "IO" cycle.
 	AddCycles(CPU.MemSpeed + ONE_CYCLE);
+	MemCheck(1);
 
 	if (!CheckEmulation())
 	{
@@ -2929,6 +2935,7 @@ static void Op02 (void)
 #endif
 
 	AddCycles(CPU.MemSpeed);
+	MemCheck(1);
 
 	uint16	addr;
 
@@ -2965,21 +2972,33 @@ static void Op02 (void)
 static void OpDC (void)
 {
 	S9xSetPCBase(AbsoluteIndirectLong(JUMP));
+#ifdef SA1_OPCODES
+	AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void OpDCSlow (void)
 {
 	S9xSetPCBase(AbsoluteIndirectLongSlow(JUMP));
+#ifdef SA1_OPCODES
+	AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op5C (void)
 {
 	S9xSetPCBase(AbsoluteLong(JUMP));
+#ifdef SA1_OPCODES
+	AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op5CSlow (void)
 {
 	S9xSetPCBase(AbsoluteLongSlow(JUMP));
+#ifdef SA1_OPCODES
+	AddCycles(ONE_CYCLE);
+#endif
 }
 
 /* JMP ********************************************************************* */
@@ -2987,31 +3006,51 @@ static void Op5CSlow (void)
 static void Op4C (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) Absolute(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op4CSlow (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) AbsoluteSlow(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op6C (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) AbsoluteIndirect(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op6CSlow (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) AbsoluteIndirectSlow(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
 }
 
 static void Op7C (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) AbsoluteIndexedIndirect(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 }
 
 static void Op7CSlow (void)
 {
 	S9xSetPCBase(ICPU.ShiftedPB + ((uint16) AbsoluteIndexedIndirectSlow(JUMP)));
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 }
 
 /* JSL/RTL ***************************************************************** */
@@ -3023,6 +3062,10 @@ static void Op22E1 (void)
 	uint32	addr = AbsoluteLong(JSR);
 	PushB(Registers.PB);
 	PushW(Registers.PCw - 1);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	Registers.SH = 1;
 	S9xSetPCBase(addr);
 }
@@ -3032,6 +3075,10 @@ static void Op22E0 (void)
 	uint32	addr = AbsoluteLong(JSR);
 	PushB(Registers.PB);
 	PushW(Registers.PCw - 1);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	S9xSetPCBase(addr);
 }
 
@@ -3040,6 +3087,10 @@ static void Op22Slow (void)
 	uint32	addr = AbsoluteLongSlow(JSR);
 	PushB(Registers.PB);
 	PushW(Registers.PCw - 1);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	if (CheckEmulation())
 		Registers.SH = 1;
 	S9xSetPCBase(addr);
@@ -3050,6 +3101,10 @@ static void Op6BE1 (void)
 	// Note: RTL is a new instruction,
 	// and so doesn't respect the emu-mode stack bounds.
 	AddCycles(TWO_CYCLES);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	PullW(Registers.PCw);
 	PullB(Registers.PB);
 	Registers.SH = 1;
@@ -3060,6 +3115,10 @@ static void Op6BE1 (void)
 static void Op6BE0 (void)
 {
 	AddCycles(TWO_CYCLES);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	PullW(Registers.PCw);
 	PullB(Registers.PB);
 	Registers.PCw++;
@@ -3069,6 +3128,10 @@ static void Op6BE0 (void)
 static void Op6BSlow (void)
 {
 	AddCycles(TWO_CYCLES);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	PullW(Registers.PCw);
 	PullB(Registers.PB);
 	if (CheckEmulation())
@@ -3083,6 +3146,10 @@ static void Op20E1 (void)
 {
 	uint16	addr = Absolute(JSR);
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	PushWE(Registers.PCw - 1);
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
@@ -3091,6 +3158,10 @@ static void Op20E0 (void)
 {
 	uint16	addr = Absolute(JSR);
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	PushW(Registers.PCw - 1);
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
@@ -3100,6 +3171,10 @@ static void Op20Slow (void)
 	uint16	addr = AbsoluteSlow(JSR);
 
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 
 	if (CheckEmulation())
 	{
@@ -3119,6 +3194,10 @@ static void OpFCE1 (void)
 	// and so doesn't respect the emu-mode stack bounds.
 	uint16	addr = AbsoluteIndexedIndirect(JSR);
 	PushW(Registers.PCw - 1);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	Registers.SH = 1;
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
@@ -3127,6 +3206,10 @@ static void OpFCE0 (void)
 {
 	uint16	addr = AbsoluteIndexedIndirect(JSR);
 	PushW(Registers.PCw - 1);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
@@ -3136,6 +3219,10 @@ static void OpFCSlow (void)
 	PushW(Registers.PCw - 1);
 	if (CheckEmulation())
 		Registers.SH = 1;
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	S9xSetPCBase(ICPU.ShiftedPB + addr);
 }
 
@@ -3144,6 +3231,10 @@ static void Op60E1 (void)
 	AddCycles(TWO_CYCLES);
 	PullWE(Registers.PCw);
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	Registers.PCw++;
 	S9xSetPCBase(Registers.PBPC);
 }
@@ -3153,6 +3244,10 @@ static void Op60E0 (void)
 	AddCycles(TWO_CYCLES);
 	PullW(Registers.PCw);
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	Registers.PCw++;
 	S9xSetPCBase(Registers.PBPC);
 }
@@ -3171,6 +3266,10 @@ static void Op60Slow (void)
 	}
 
 	AddCycles(ONE_CYCLE);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 	Registers.PCw++;
 	S9xSetPCBase(Registers.PBPC);
 }
@@ -3443,6 +3542,10 @@ static void OpEB (void)
 static void Op40Slow (void)
 {
 	AddCycles(TWO_CYCLES);
+#ifdef SA1_OPCODES
+	if (SA1.CCpuExecutingRom) AddCycles(ONE_CYCLE);
+#endif
+
 
 	if (!CheckEmulation())
 	{

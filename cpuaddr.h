@@ -219,6 +219,7 @@ static inline uint8 Immediate8 (AccessMode a)
 	if (a & READ)
 		OpenBus = val;
 	AddCycles(CPU.MemSpeed);
+	MemCheck(1);
 	Registers.PCw++;
 
 	return (val);
@@ -240,6 +241,7 @@ static inline uint16 Immediate16 (AccessMode a)
 	if (a & READ)
 		OpenBus = (uint8) (val >> 8);
 	AddCycles(CPU.MemSpeedx2);
+	MemCheck(2);
 	Registers.PCw += 2;
 
 	return (val);
@@ -383,6 +385,7 @@ static inline uint32 AbsoluteLong (AccessMode a)						// l
 {
 	uint32	addr = READ_3WORD(CPU.PCBase + Registers.PCw);
 	AddCycles(CPU.MemSpeedx2 + CPU.MemSpeed);
+	MemCheck(3);
 	if (a & READ)
 		OpenBus = addr >> 16;
 	Registers.PCw += 3;
